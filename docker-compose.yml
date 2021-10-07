@@ -1,0 +1,38 @@
+version: "3"
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    container_name: es01-test
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    environment:
+      discovery.type: single-node
+      http.publish_host: localhost
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.15.0
+    container_name: kib01-test
+    ports:
+      - '5601:5601'
+    environment:
+      ELASTICSEARCH_HOSTS: http://es01-test:9200
+    depends_on:
+      - elasticsearch
